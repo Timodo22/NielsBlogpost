@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Security: Een Diepgaande Analyse van Azure, AWS en GCP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e2e8f0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .author-info {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 24px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 80px 0;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #60a5fa;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .provider-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .provider-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .provider-card.azure::before {
+            background: linear-gradient(90deg, #0078d4, #00bcf2);
+        }
+
+        .provider-card.aws::before {
+            background: linear-gradient(90deg, #ff9900, #ffcc00);
+        }
+
+        .provider-card.gcp::before {
+            background: linear-gradient(90deg, #4285f4, #34a853);
+        }
+
+        .provider-card h4 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+
+        .score {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .score-label {
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li::before {
+            content: '🔹';
+            margin-right: 10px;
+        }
+
+        .threat-detection {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .code-snippet {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .conclusion h3 {
+            color: #22c55e;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Cloud Security Research</h1>
+                <p class="hero-subtitle">Een diepgaande analyse van beveiligingsopties in Azure, AWS en Google Cloud Platform</p>
+                <div class="author-info">
+                    <div class="author-avatar">NT</div>
+                    <div>
+                        <div style="font-weight: 600;">Niels Tilleman</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">ICS-ICSA-CMK • April 2025</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <section class="section">
+                <h2 class="section-title">Onderzoeksdoelstelling</h2>
+                <div class="card">
+                    <p>In een tijd waarin organisaties massaal migreren naar de cloud, is het cruciaal om de beveiligingsrisico's goed te begrijpen. Dit onderzoek analyseert de <span class="highlight">security configuraties en hardening technieken</span> binnen Microsoft Azure en vergelijkt deze met AWS en Google Cloud Platform.</p>
+                    <p>Het doel is om organisaties praktische inzichten te bieden voor het veilig inrichten van cloudomgevingen, zowel in single-cloud als multi-cloud scenario's.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Azure Security Features</h2>
+                <div class="card">
+                    <h3>🛡️ Geïntegreerd Beveiligingsecosysteem</h3>
+                    <p>Microsoft Azure biedt een uitgebreid scala aan native beveiligingstools die naadloos samenwerken:</p>
+                    
+                    <div class="feature-list">
+                        <li><strong>Azure Active Directory</strong> - Centrale identity provider met MFA en Conditional Access</li>
+                        <li><strong>Microsoft Defender for Cloud</strong> - Cloud Security Posture Management (CSPM)</li>
+                        <li><strong>Microsoft Sentinel</strong> - Cloud-native SIEM/SOAR oplossing</li>
+                        <li><strong>Azure Key Vault</strong> - Centraal beheer van sleutels en certificaten</li>
+                        <li><strong>Privileged Identity Management</strong> - Just-in-time access voor verhoogde rechten</li>
+                    </div>
+
+                    <p>Deze tools zijn ontwikkeld volgens de <span class="highlight">CIS Microsoft Azure Foundations Benchmark v1.5.0</span> en bieden out-of-the-box compliance met industriestandaarden.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Threat Detection in Actie</h2>
+                <div class="card threat-detection">
+                    <h3>🚨 Praktijktest: Brute Force Detectie</h3>
+                    <p>In een gecontroleerde testomgeving heb ik een brute-force aanval gesimuleerd op een Azure VM. De resultaten waren indrukwekkend:</p>
+                    
+                    <div class="code-snippet">
+                        <strong>Detectietijd:</strong> &lt; 1 minuut na start aanval<br>
+                        <strong>Automatische respons:</strong> IP-adres geblokkeerd via Logic App<br>
+                        <strong>Notificatie:</strong> Teams-bericht verstuurd naar SOC<br>
+                        <strong>MITRE mapping:</strong> T1110 (Brute Force) geïdentificeerd
+                    </div>
+
+                    <p>De integratie tussen <span class="highlight">Microsoft Defender for Cloud</span>, <span class="highlight">Sentinel</span> en <span class="highlight">Logic Apps</span> zorgt voor een volledig geautomatiseerde threat response binnen enkele minuten.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Provider Vergelijking</h2>
+                <div class="comparison-grid">
+                    <div class="provider-card azure">
+                        <h4>🔷 Microsoft Azure</h4>
+                        <div class="score">
+                            <span class="score-label">Security Score:</span>
+                            <span class="stars">★★★★☆</span>
+                        </div>
+                        <p><strong>Sterktes:</strong></p>
+                        <ul class="feature-list">
+                            <li>Geïntegreerde security suite</li>
+                            <li>Uitstekende compliance ondersteuning</li>
+                            <li>Krachtige identity governance (PIM/RBAC)</li>
+                            <li>Centrale threat detection via Sentinel</li>
+                        </ul>
+                        <p><strong>Ideaal voor:</strong> Enterprise omgevingen met Microsoft-stack</p>
+                    </div>
+
+                    <div class="provider-card aws">
+                        <h4>🟠 Amazon Web Services</h4>
+                        <div class="score">
+                            <span class="score-label">Security Score:</span>
+                            <span class="stars">★★★★☆</span>
+                        </div>
+                        <p><strong>Sterktes:</strong></p>
+                        <ul class="feature-list">
+                            <li>Granulaire IAM controle</li>
+                            <li>Uitgebreide automatiseringsmogelijkheden</li>
+                            <li>GuardDuty voor ML-based threat detection</li>
+                            <li>Modulaire, flexibele architectuur</li>
+                        </ul>
+                        <p><strong>Ideaal voor:</strong> DevOps teams en cloud-native applicaties</p>
+                    </div>
+
+                    <div class="provider-card gcp">
+                        <h4>🔵 Google Cloud Platform</h4>
+                        <div class="score">
+                            <span class="score-label">Security Score:</span>
+                            <span class="stars">★★☆☆☆</span>
+                        </div>
+                        <p><strong>Sterktes:</strong></p>
+                        <ul class="feature-list">
+                            <li>Native Zero Trust architectuur</li>
+                            <li>Developer-vriendelijke interfaces</li>
+                            <li>AI/ML gedreven security innovaties</li>
+                            <li>Eenvoudige configuratie</li>
+                        </ul>
+                        <p><strong>Ideaal voor:</strong> Startups en AI/ML workloads</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Identity & Access Management Best Practices</h2>
+                <div class="card">
+                    <h3>🔐 Zero Trust Security Model</h3>
+                    <p>Modern cloud security draait om het <span class="highlight">"never trust, always verify"</span> principe. De belangrijkste IAM best practices zijn:</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <h4>🎯 Least Privilege</h4>
+                            <p>Gebruikers krijgen alleen de minimaal benodigde rechten</p>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                            <h4>⏱️ Just-in-Time Access</h4>
+                            <p>Verhoogde rechten alleen wanneer nodig, tijdelijk</p>
+                        </div>
+                        <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
+                            <h4>🔍 Continuous Monitoring</h4>
+                            <p>Realtime monitoring van alle access patterns</p>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <h4>🛡️ Multi-Factor Authentication</h4>
+                            <p>Verplichte tweede authenticatiefactor</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="conclusion">
+                    <h3>🎯 Onderzoeksconclusie</h3>
+                    <p style="font-size: 1.2rem; margin-bottom: 30px;">Voor enterprise organisaties biedt <span class="highlight">Microsoft Azure</span> de meest complete en geïntegreerde security oplossing, vooral in combinatie met bestaande Microsoft-infrastructuur.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
+                        <div>
+                            <h4 style="color: #60a5fa; margin-bottom: 10px;">🥇 Azure Voordelen</h4>
+                            <p>Geïntegreerde suite, uitstekende compliance, centrale beheer</p>
+                        </div>
+                        <div>
+                            <h4 style="color: #fbbf24; margin-bottom: 10px;">🥈 AWS Alternatief</h4>
+                            <p>Maximale flexibiliteit, granulaire controle, sterke automatisering</p>
+                        </div>
+                        <div>
+                            <h4 style="color: #34d399; margin-bottom: 10px;">🥉 GCP Innovatie</h4>
+                            <p>Zero Trust native, AI-gedreven security, developer-friendly</p>
+                        </div>
+                    </div>
+                    
+                    <p style="margin-top: 30px; font-style: italic;">De keuze hangt uiteindelijk af van je organisatie's specifieke behoeften, bestaande infrastructuur en compliance-eisen.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2025 Niels Tilleman - Cloud Security Research</p>
+            <p style="margin-top: 10px; opacity: 0.7;">Fontys ICT - ICS-ICSA-CMK</p>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth scrolling animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card, .provider-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
+
+            // Add pulse effect to highlight elements
+            const highlights = document.querySelectorAll('.highlight');
+            highlights.forEach(highlight => {
+                highlight.addEventListener('mouseenter', function() {
+                    this.classList.add('pulse');
+                });
+                highlight.addEventListener('mouseleave', function() {
+                    this.classList.remove('pulse');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
